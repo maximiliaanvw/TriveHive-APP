@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { signOutAction } from "@/app/actions";
 
 const navigation = [
   {
@@ -124,8 +126,9 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Collapse Button */}
-        <div className="border-t border-sidebar-border p-3">
+        {/* Footer */}
+        <div className="border-t border-sidebar-border p-3 space-y-2">
+          {/* Collapse Button */}
           <Button
             variant="ghost"
             size="sm"
@@ -144,6 +147,37 @@ export function Sidebar() {
               </>
             )}
           </Button>
+
+          {/* Sign Out Button */}
+          <form action={signOutAction}>
+            {isCollapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-center text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="font-medium">
+                  Cerrar sesión
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Cerrar sesión</span>
+              </Button>
+            )}
+          </form>
         </div>
       </aside>
     </TooltipProvider>
