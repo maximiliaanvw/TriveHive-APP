@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import CallsTableClient, { CallRecord, CallStatus, CallType, Sentiment, TranscriptMessage } from "./calls-table-client";
+
+export const metadata: Metadata = {
+  title: "Historial de Llamadas",
+};
 
 // Demo Data - 10 realistic call scenarios (fallback for users with no calls)
 const demoData: CallRecord[] = [

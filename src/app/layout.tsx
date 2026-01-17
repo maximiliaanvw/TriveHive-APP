@@ -13,8 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TriveHive - Automatización de Voz IA",
-  description: "Plataforma B2B SaaS para Automatización de Voz IA. Optimiza las comunicaciones con tus clientes con agentes de voz inteligentes.",
+  title: {
+    default: "TriveHive | Recepcionista IA 24/7",
+    template: "%s | TriveHive",
+  },
+  description: "Automatiza la atención al cliente y el agendamiento de citas con inteligencia artificial.",
+  icons: {
+    icon: "/favicon.ico", // Ensure this points to your public folder icon
+  },
 };
 
 export default function RootLayout({

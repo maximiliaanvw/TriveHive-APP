@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   CalendarCheck,
   PhoneIncoming,
@@ -19,6 +20,10 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Panel de Control",
+};
 
 // KPI Data
 const kpiData = [
