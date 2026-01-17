@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   description: "Automatiza la atención al cliente y el agendamiento de citas con inteligencia artificial.",
   icons: {
-    icon: "/favicon.ico", // Ensure this points to your public folder icon
+    icon: "/Logo/logo trivehive icon 2.svg",
   },
 };
 
