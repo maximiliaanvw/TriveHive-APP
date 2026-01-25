@@ -51,9 +51,16 @@ export async function updateSession(request: NextRequest) {
 
   // If user is authenticated and trying to access login page
   if (user && pathname.startsWith("/login")) {
-    // Redirect to overview
+    // Check if user is admin and redirect accordingly
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const userEmail = user.email?.toLowerCase();
+    
     const url = request.nextUrl.clone();
-    url.pathname = "/overview";
+    if (adminEmail && userEmail === adminEmail.toLowerCase()) {
+      url.pathname = "/admin";
+    } else {
+      url.pathname = "/overview";
+    }
     return NextResponse.redirect(url);
   }
 

@@ -22,5 +22,11 @@ export async function login(formData: FormData) {
     return { error: "Invalid email or password" };
   }
 
+  // Check if user is admin and redirect accordingly
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) {
+    redirect("/admin");
+  }
+
   redirect("/overview");
 }

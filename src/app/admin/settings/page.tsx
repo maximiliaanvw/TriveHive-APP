@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { User, Shield, Loader2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User, Shield, Loader2 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -14,15 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { useState, useEffect, useRef } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { createClient } from "@/lib/supabase/client"
-import { updateProfileWithAvatar, changePassword } from "./actions"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/dialog";
+import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/client";
+import { updateProfileWithAvatar, changePassword } from "../../(dashboard)/settings/actions";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 // Profile form schema
 const profileSchema = z.object({
@@ -30,13 +30,7 @@ const profileSchema = z.object({
     .string()
     .min(1, { message: "El nombre es requerido" })
     .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-})
-
-// Business settings form schema
-const businessSettingsSchema = z.object({
-  forwardingPhone: z.string().optional(),
-  businessName: z.string().optional(),
-})
+});
 
 // Password change form schema
 const passwordChangeSchema = z
@@ -52,65 +46,60 @@ const passwordChangeSchema = z
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Las contraseñas no coinciden",
     path: ["confirmPassword"],
-  })
+  });
 
-type ProfileFormData = z.infer<typeof profileSchema>
-type BusinessSettingsFormData = z.infer<typeof businessSettingsSchema>
-type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>
+type ProfileFormData = z.infer<typeof profileSchema>;
+type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
 
-export default function SettingsPage() {
-  const router = useRouter()
-  const { toast } = useToast()
+export default function AdminSettingsPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   
-  const [userName, setUserName] = useState("")
-  const [userEmail, setUserEmail] = useState("")
-  const [userInitials, setUserInitials] = useState("")
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [savingProfile, setSavingProfile] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userInitials, setUserInitials] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   
   // Avatar upload state
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Password change dialog
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
-  
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+
   // Form hooks
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-  })
-
-  const businessSettingsForm = useForm<BusinessSettingsFormData>({
-    resolver: zodResolver(businessSettingsSchema),
-  })
+  });
 
   const passwordChangeForm = useForm<PasswordChangeFormData>({
     resolver: zodResolver(passwordChangeSchema),
-  })
+  });
 
   // Fetch user data
   useEffect(() => {
     async function fetchUserData() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        const email = user.email || ""
+        const email = user.email || "";
         const name = user.user_metadata?.full_name || 
                      user.user_metadata?.name || 
-                     email.split("@")[0]
+                     email.split("@")[0];
         const initials = name
           .split(" ")
-          .map((n) => n[0])
+          .map((n: string) => n[0])
           .join("")
           .toUpperCase()
-          .slice(0, 2) || "U"
+          .slice(0, 2) || "A";
         
         // Get avatar URL from user metadata or user_settings
-        let avatar = user.user_metadata?.avatar_url || null
+        let avatar = user.user_metadata?.avatar_url || null;
         
         if (!avatar) {
           // Try to fetch from user_settings
@@ -118,45 +107,31 @@ export default function SettingsPage() {
             .from("user_settings")
             .select("avatar_url")
             .eq("user_id", user.id)
-            .single()
+            .single();
           
           if (settings?.avatar_url) {
-            avatar = settings.avatar_url
+            avatar = settings.avatar_url;
           }
         }
         
-        setUserName(name)
-        setUserEmail(email)
-        setUserInitials(initials)
-        setAvatarUrl(avatar)
-        setAvatarPreview(avatar)
-        
+        setUserName(name);
+        setUserEmail(email);
+        setUserInitials(initials);
+        setAvatarUrl(avatar);
+        setAvatarPreview(avatar);
+
         // Set form default values
-        profileForm.reset({ name })
-        
-        // Fetch business settings
-        const { data: userSettings } = await supabase
-          .from("user_settings")
-          .select("business_name")
-          .eq("user_id", user.id)
-          .single()
-        
-        if (userSettings?.business_name) {
-          businessSettingsForm.reset({
-            businessName: userSettings.business_name,
-            forwardingPhone: "",
-          })
-        }
+        profileForm.reset({ name });
       }
-      setLoading(false)
+      setLoading(false);
     }
     
-    fetchUserData()
-  }, [])
+    fetchUserData();
+  }, []);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
@@ -164,8 +139,8 @@ export default function SettingsPage() {
         title: "Error",
         description: "El archivo debe ser una imagen",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Validate file size (1MB max)
@@ -174,147 +149,98 @@ export default function SettingsPage() {
         title: "Error",
         description: "El archivo debe ser menor a 1MB",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setSelectedAvatarFile(file)
+    setSelectedAvatarFile(file);
 
     // Create preview
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onloadend = () => {
-      setAvatarPreview(reader.result as string)
-    }
-    reader.readAsDataURL(file)
-  }
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleProfileSave = async (data: ProfileFormData) => {
-    setSavingProfile(true)
+    setSavingProfile(true);
 
     try {
-      const result = await updateProfileWithAvatar(data.name, selectedAvatarFile)
+      const result = await updateProfileWithAvatar(data.name, selectedAvatarFile);
 
       if (result.error) {
         toast({
           title: "Error",
           description: result.error,
           variant: "destructive",
-        })
+        });
       } else {
         toast({
           title: "Perfil actualizado",
           description: "Tu perfil se ha actualizado correctamente",
           variant: "success",
-        })
+        });
         
         // Update local state
-        setUserName(data.name)
+        setUserName(data.name);
         
         // Update avatar URL if a new one was uploaded
         if (result.avatarUrl) {
-          setAvatarUrl(result.avatarUrl)
+          setAvatarUrl(result.avatarUrl);
         }
         
         // Clear selected file
-        setSelectedAvatarFile(null)
+        setSelectedAvatarFile(null);
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""
+          fileInputRef.current.value = "";
         }
         
         // Refresh the page to update user-nav
-        router.refresh()
+        router.refresh();
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Ocurrió un error al actualizar el perfil",
         variant: "destructive",
-      })
+      });
     } finally {
-      setSavingProfile(false)
+      setSavingProfile(false);
     }
-  }
-
-  const handleBusinessSettingsSave = async (data: BusinessSettingsFormData) => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "No autenticado",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      // Update user_settings
-      const { error } = await supabase
-        .from("user_settings")
-        .upsert(
-          {
-            user_id: user.id,
-            business_name: data.businessName || null,
-          },
-          {
-            onConflict: "user_id",
-          }
-        )
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: `Error al guardar: ${error.message}`,
-          variant: "destructive",
-        })
-      } else {
-        toast({
-          title: "Configuración guardada",
-          description: "La configuración de negocio se ha guardado correctamente",
-          variant: "success",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ocurrió un error al guardar la configuración",
-        variant: "destructive",
-      })
-    }
-  }
+  };
 
   const handlePasswordChange = async (data: PasswordChangeFormData) => {
-    setChangingPassword(true)
+    setChangingPassword(true);
 
     try {
-      const result = await changePassword(data.newPassword)
+      const result = await changePassword(data.newPassword);
 
       if (result.error) {
         toast({
           title: "Error",
           description: result.error,
           variant: "destructive",
-        })
+        });
       } else {
         toast({
           title: "Contraseña actualizada",
           description: "Tu contraseña se ha cambiado correctamente",
           variant: "success",
-        })
-        setIsPasswordDialogOpen(false)
-        passwordChangeForm.reset()
+        });
+        setIsPasswordDialogOpen(false);
+        passwordChangeForm.reset();
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Ocurrió un error al cambiar la contraseña",
         variant: "destructive",
-      })
+      });
     } finally {
-      setChangingPassword(false)
+      setChangingPassword(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -324,7 +250,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground mt-4">Cargando...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -335,7 +261,7 @@ export default function SettingsPage() {
           Configuración
         </h1>
         <p className="text-muted-foreground mt-1">
-          Gestiona la configuración y preferencias de tu cuenta.
+          Gestiona la configuración y preferencias de tu cuenta de administrador.
         </p>
       </div>
 
@@ -369,7 +295,7 @@ export default function SettingsPage() {
                   accept="image/*"
                   onChange={handleAvatarSelect}
                   className="hidden"
-                  id="avatar-upload"
+                  id="avatar-upload-admin"
                 />
                 <Button
                   type="button"
@@ -429,55 +355,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Business Settings Section */}
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle>Configuración de Negocio</CardTitle>
-            <CardDescription>
-              La IA transferirá las llamadas a este número cuando se solicite un humano.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={businessSettingsForm.handleSubmit(handleBusinessSettingsSave)} noValidate className="space-y-6">
-            {/* Forwarding Phone Number */}
-            <div className="space-y-2">
-              <Label htmlFor="forwarding-phone">Número de Teléfono de Reenvío</Label>
-              <Input
-                id="forwarding-phone"
-                type="tel"
-                placeholder="+34 612 345 678"
-                aria-invalid={businessSettingsForm.formState.errors.forwardingPhone ? "true" : "false"}
-                className={businessSettingsForm.formState.errors.forwardingPhone ? "border-red-500" : ""}
-                {...businessSettingsForm.register("forwardingPhone")}
-              />
-              {businessSettingsForm.formState.errors.forwardingPhone && (
-                <p className="text-sm text-red-500 mt-1">{businessSettingsForm.formState.errors.forwardingPhone.message}</p>
-              )}
-            </div>
-
-            {/* Business Name */}
-            <div className="space-y-2">
-              <Label htmlFor="business-name">Nombre del Negocio</Label>
-              <Input
-                id="business-name"
-                type="text"
-                placeholder="Ingresa el nombre de tu negocio"
-                aria-invalid={businessSettingsForm.formState.errors.businessName ? "true" : "false"}
-                className={businessSettingsForm.formState.errors.businessName ? "border-red-500" : ""}
-                {...businessSettingsForm.register("businessName")}
-              />
-              {businessSettingsForm.formState.errors.businessName && (
-                <p className="text-sm text-red-500 mt-1">{businessSettingsForm.formState.errors.businessName.message}</p>
-              )}
-            </div>
-
-            <Button type="submit">Guardar Cambios</Button>
-          </form>
-        </CardContent>
-      </Card>
-
       {/* Security Section */}
       <Card>
         <CardHeader>
@@ -505,9 +382,9 @@ export default function SettingsPage() {
               </DialogHeader>
               <form onSubmit={passwordChangeForm.handleSubmit(handlePasswordChange)} noValidate className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="new-password">Nueva Contraseña</Label>
+                  <Label htmlFor="new-password-admin">Nueva Contraseña</Label>
                   <Input
-                    id="new-password"
+                    id="new-password-admin"
                     type="password"
                     placeholder="Ingresa nueva contraseña"
                     disabled={changingPassword}
@@ -520,9 +397,9 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+                  <Label htmlFor="confirm-password-admin">Confirmar Contraseña</Label>
                   <Input
-                    id="confirm-password"
+                    id="confirm-password-admin"
                     type="password"
                     placeholder="Confirma nueva contraseña"
                     disabled={changingPassword}
@@ -539,8 +416,8 @@ export default function SettingsPage() {
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      setIsPasswordDialogOpen(false)
-                      passwordChangeForm.reset()
+                      setIsPasswordDialogOpen(false);
+                      passwordChangeForm.reset();
                     }}
                     disabled={changingPassword}
                   >
@@ -563,5 +440,5 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

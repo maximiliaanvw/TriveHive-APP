@@ -1,0 +1,203 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import {
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { signOutAction } from "@/app/actions";
+
+const adminNavigation = [
+  {
+    name: "Vista General",
+    href: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Usuarios",
+    href: "/admin/users",
+    icon: Users,
+  },
+  {
+    name: "Suscripciones",
+    href: "/admin/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    name: "Configuración",
+    href: "/admin/settings",
+    icon: Settings,
+  },
+];
+
+export function AdminSidebar() {
+  const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={cn(
+          "relative flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        {/* Logo with ADMIN badge */}
+        <div className="flex h-16 items-center border-b border-sidebar-border px-4">
+          <Link
+            href="/admin"
+            className={cn(
+              "flex items-center justify-center font-semibold text-sidebar-foreground w-full",
+              !isCollapsed && "justify-start gap-2"
+            )}
+          >
+            {isCollapsed ? (
+              <div className="relative">
+                <Image
+                  src="/Logo/logo trivehive icon 2.svg"
+                  alt="TriveHive"
+                  width={36}
+                  height={36}
+                  className="h-auto w-auto"
+                  style={{ width: "36px", height: "auto" }}
+                  priority
+                />
+                {/* ADMIN badge for collapsed state */}
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] font-bold px-1 py-0.5 rounded uppercase">
+                  A
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 w-full">
+                <Image
+                  src="/Logo/vector full.svg"
+                  alt="TriveHive"
+                  width={130}
+                  height={36}
+                  className="h-auto w-auto"
+                  style={{ width: "130px", height: "auto" }}
+                  priority
+                />
+                {/* ADMIN badge for expanded state */}
+                <span className="bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded uppercase leading-none">
+                  ADMIN
+                </span>
+              </div>
+            )}
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1 p-3">
+          {adminNavigation.map((item) => {
+            const isActive = pathname === item.href;
+            const NavItem = (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                  isCollapsed && "justify-center px-2"
+                )}
+              >
+                <item.icon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    isActive ? "text-sidebar-primary" : ""
+                  )}
+                />
+                {!isCollapsed && <span>{item.name}</span>}
+              </Link>
+            );
+
+            if (isCollapsed) {
+              return (
+                <Tooltip key={item.name}>
+                  <TooltipTrigger asChild>{NavItem}</TooltipTrigger>
+                  <TooltipContent side="right" className="font-medium">
+                    {item.name}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+
+            return NavItem;
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-sidebar-border p-3 space-y-2">
+          {/* Collapse Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={cn(
+              "w-full justify-center text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              !isCollapsed && "justify-start"
+            )}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                <span>Contraer</span>
+              </>
+            )}
+          </Button>
+
+          {/* Sign Out Button */}
+          <form action={signOutAction}>
+            {isCollapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-center text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="font-medium">
+                  Cerrar sesión
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>Cerrar sesión</span>
+              </Button>
+            )}
+          </form>
+        </div>
+      </aside>
+    </TooltipProvider>
+  );
+}

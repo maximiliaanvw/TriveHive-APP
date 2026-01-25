@@ -1,26 +1,69 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "./actions";
 import { Loader2 } from "lucide-react";
 
-type LoginState = {
-  error?: string;
-} | null;
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "El email es requerido" })
+    .email({ message: "Por favor ingresa un email válido" }),
+  password: z
+    .string()
+    .min(1, { message: "La contraseña es requerida" })
+    .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+});
 
-async function loginAction(
-  _prevState: LoginState,
-  formData: FormData
-): Promise<LoginState> {
-  const result = await login(formData);
-  return result ?? null;
-}
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(loginAction, null);
+  const [isPending, setIsPending] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsPending(true);
+    setServerError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+
+      const result = await login(formData);
+      
+      if (result?.error) {
+        setServerError(result.error);
+        setIsPending(false);
+      }
+      // Si no hay error, el redirect de Next.js lanzará una excepción especial
+      // que será manejada automáticamente por Next.js, así que no necesitamos hacer nada
+    } catch (error: any) {
+      // Verificar si es un error de redirección de Next.js
+      // Los redirects de Next.js lanzan un error especial que debemos ignorar
+      if (error?.digest?.startsWith('NEXT_REDIRECT') || error?.message?.includes('NEXT_REDIRECT')) {
+        // Es una redirección exitosa, no mostrar error
+        return;
+      }
+      // Solo mostrar error si es un error real
+      setServerError("Ocurrió un error al iniciar sesión");
+      setIsPending(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -33,10 +76,10 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form action={formAction} className="space-y-4">
-        {state?.error && (
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        {serverError && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {state.error}
+            {serverError}
           </div>
         )}
 
@@ -44,26 +87,34 @@ export default function LoginPage() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
             placeholder="tu@empresa.com"
-            required
             autoComplete="email"
             disabled={isPending}
+            aria-invalid={errors.email ? "true" : "false"}
+            className={errors.email ? "border-red-500" : ""}
+            {...register("email")}
           />
+          {errors.email && (
+            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="password">Contraseña</Label>
           <Input
             id="password"
-            name="password"
             type="password"
             placeholder="••••••••"
-            required
             autoComplete="current-password"
             disabled={isPending}
+            aria-invalid={errors.password ? "true" : "false"}
+            className={errors.password ? "border-red-500" : ""}
+            {...register("password")}
           />
+          {errors.password && (
+            <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         <Button type="submit" className="w-full" disabled={isPending}>

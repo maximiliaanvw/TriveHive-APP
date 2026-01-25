@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Search,
   Filter,
@@ -14,23 +15,13 @@ import {
   Frown,
   Bot,
   User,
-  Clock,
-  Hash,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
@@ -175,7 +166,6 @@ function TranscriptBubble({ message }: { message: TranscriptMessage }) {
 }
 
 export default function CallsTableClient({ calls, isDemoMode }: CallsTableClientProps) {
-  const [selectedCall, setSelectedCall] = useState<CallRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter calls based on search
@@ -252,14 +242,16 @@ export default function CallsTableClient({ calls, isDemoMode }: CallsTableClient
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider max-w-[250px]">
                       Resumen
                     </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredCalls.map((call) => (
                     <tr
                       key={call.id}
-                      onClick={() => setSelectedCall(call)}
-                      className="hover:bg-muted/20 transition-colors cursor-pointer"
+                      className="hover:bg-muted/20 transition-colors"
                     >
                       <td className="px-4 py-3">
                         <StatusBadge status={call.status} />
@@ -292,6 +284,18 @@ export default function CallsTableClient({ calls, isDemoMode }: CallsTableClient
                           {call.summary}
                         </p>
                       </td>
+                      <td className="px-4 py-3">
+                        <Link href={`/calls/${call.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Ver
+                          </Button>
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -308,109 +312,6 @@ export default function CallsTableClient({ calls, isDemoMode }: CallsTableClient
           </CardContent>
         </Card>
       </div>
-
-      {/* Detail Sheet */}
-      <Sheet open={!!selectedCall} onOpenChange={() => setSelectedCall(null)}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          {selectedCall && (
-            <>
-              <SheetHeader className="border-b pb-4">
-                <SheetTitle className="text-lg">
-                  {selectedCall.customerName}
-                </SheetTitle>
-                <SheetDescription asChild>
-                  <div className="space-y-1">
-                    <span className="flex items-center gap-2 text-sm">
-                      {selectedCall.customerPhone}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Hash className="h-3 w-3" />
-                      {selectedCall.id}
-                    </span>
-                  </div>
-                </SheetDescription>
-              </SheetHeader>
-
-              <div className="space-y-6 py-6">
-                {/* Section 1: Recording */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    Grabación ({selectedCall.duration})
-                  </h3>
-                  <div className="rounded-lg border bg-muted/30 p-4">
-                    <audio controls className="w-full h-10">
-                      <source src={selectedCall.recordingUrl} type="audio/mpeg" />
-                      Tu navegador no soporta el elemento de audio.
-                    </audio>
-                  </div>
-                </div>
-
-                {/* Section 2: AI Analysis */}
-                <Card className="py-4">
-                  <CardHeader className="py-0 px-4">
-                    <CardTitle className="text-sm font-medium">
-                      Análisis IA
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-4 py-0 mt-4 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Resultado
-                        </p>
-                        <div className="flex items-center gap-1.5">
-                          {selectedCall.wasSuccessful ? (
-                            <>
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                              <span className="text-sm font-medium text-emerald-600">
-                                Exitosa
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-4 w-4 text-red-500" />
-                              <span className="text-sm font-medium text-red-600">
-                                No exitosa
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Sentimiento
-                        </p>
-                        <SentimentIcon sentiment={selectedCall.sentiment} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                        Resumen
-                      </p>
-                      <p className="text-sm text-foreground leading-relaxed">
-                        {selectedCall.fullSummary}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Section 3: Transcript */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-foreground">
-                    Transcripción
-                  </h3>
-                  <div className="space-y-3 rounded-lg border bg-muted/10 p-4 max-h-[400px] overflow-y-auto">
-                    {selectedCall.transcript.map((message, index) => (
-                      <TranscriptBubble key={index} message={message} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
     </>
   );
 }

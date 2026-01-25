@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
   vapi_assistant_id TEXT UNIQUE NOT NULL,
   vapi_phone_number_id TEXT,
   business_name TEXT,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
