@@ -283,11 +283,11 @@ export default async function AdminPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/10 text-brand text-sm font-medium">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          {user.name}
+                          {user.name || user.email}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {user.email}
